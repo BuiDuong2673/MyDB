@@ -22,17 +22,6 @@ export default function ChatPage() {
     toggleCollapse: toggleSidebarCollapse,
   } = useSidebar();
 
-  // Chat state
-  const { messages, isLoading, error, sendMessage, clearMessages, stopGeneration } =
-    useChat({
-      onError: (err) => {
-        addToast({
-          type: "error",
-          message: err.message || "An error occurred while processing your message",
-        });
-      },
-    });
-
   // Toast state
   const { toasts, addToast, removeToast } = useToast();
 
@@ -41,12 +30,24 @@ export default function ChatPage() {
   const [currentConversationId, setCurrentConversationId] = useState<string>();
   const [user, setUser] = useState<UserProfile>();
   const [settings, setSettings] = useState<AppSettings>({
-    theme: "dark",
-    model: "gemini-pro",
+    theme: "light",
+    model: "gemini-2.5-flash",
     temperature: 0.7,
     maxTokens: 2048,
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // Chat state
+  const { messages, isLoading, sendMessage, clearMessages, stopGeneration } =
+    useChat({
+      settings,
+      onError: (err) => {
+        addToast({
+          type: "error",
+          message: err.message || "An error occurred while processing your message",
+        });
+      },
+    });
 
   // Load initial data
   useEffect(() => {
@@ -66,16 +67,6 @@ export default function ChatPage() {
     };
     loadData();
   }, []);
-
-  // Show error toast when chat error occurs
-  useEffect(() => {
-    if (error) {
-      addToast({
-        type: "error",
-        message: error.message || "Something went wrong. Please try again.",
-      });
-    }
-  }, [error, addToast]);
 
   const handleNewChat = useCallback(() => {
     setCurrentConversationId(undefined);
@@ -129,7 +120,8 @@ export default function ChatPage() {
       {/* Main Chat Area */}
       <main className="flex-1 flex flex-col min-w-0">
         <ChatHeader
-          title={currentConversation?.title}
+          sidebarOpen={sidebarOpen}
+          subtitle={currentConversation?.title}
           onClearChat={clearMessages}
         />
 

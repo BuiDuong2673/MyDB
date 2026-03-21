@@ -1,35 +1,56 @@
 "use client";
 
-import { Sparkles, MoreVertical, Share, Download, Trash2 } from "lucide-react";
+import { TrainFront, MoreVertical, Share, Download, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface ChatHeaderProps {
+  /** Main app name shown in the header */
   title?: string;
+  /** Optional line under the title (e.g. active conversation name) */
+  subtitle?: string;
+  /** When false on small screens, the sidebar toggle is fixed top-left; offset the train so they do not overlap. */
+  sidebarOpen?: boolean;
   onClearChat?: () => void;
 }
 
-export function ChatHeader({ title, onClearChat }: ChatHeaderProps) {
+export function ChatHeader({
+  title = "MyDB",
+  subtitle,
+  sidebarOpen = true,
+  onClearChat,
+}: ChatHeaderProps) {
   const [showMenu, setShowMenu] = useState(false);
 
   return (
-    <header className="flex items-center justify-between px-4 py-3 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="font-semibold text-sm">
-              {title || "New Conversation"}
-            </h1>
-            <p className="text-xs text-muted-foreground">Gemini Pro</p>
-          </div>
+    <header className="relative flex min-h-[52px] items-center justify-end px-4 py-3 border-b border-border bg-card shadow-sm">
+      <div
+        className={cn(
+          "absolute top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg bg-primary shadow-sm",
+          /* Desktop: open-sidebar control sits in the flex row before main — default inset is fine. */
+          "left-4",
+          /* Mobile: toggle is fixed left-4 (16px) + 40px button; start the train after it with a small gap. */
+          !sidebarOpen && "max-md:left-[3.75rem]"
+        )}
+        aria-hidden
+      >
+        <TrainFront className="h-4 w-4 text-primary-foreground" />
+      </div>
+
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-20">
+        <div className="pointer-events-auto max-w-[min(100%,calc(100vw-12rem))] text-center">
+          <h1 className="font-semibold text-base tracking-tight text-foreground">
+            {title}
+          </h1>
+          <p className="truncate text-xs text-muted-foreground">
+            {subtitle ?? "AI travel advisor"}
+          </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="relative z-10 ml-auto flex items-center gap-1">
         <Tooltip content="Share">
           <Button variant="ghost" size="icon">
             <Share className="w-4 h-4" />

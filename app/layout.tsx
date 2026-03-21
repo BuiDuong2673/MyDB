@@ -13,14 +13,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Assistant - Intelligent Conversations",
-  description: "A modern AI chatbot powered by advanced language models. Get instant answers, creative help, and intelligent conversations.",
-  keywords: ["AI", "chatbot", "assistant", "conversation", "language model"],
-  authors: [{ name: "AI Assistant" }],
+  title: "MyDB — AI travel advisor",
+  description:
+    "The AI travel advisor that finds the perfect train for your journey.",
+  keywords: ["travel", "train", "AI", "assistant", "MyDB"],
+  authors: [{ name: "MyDB" }],
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0a0a",
+  themeColor: "#ec0016",
   width: "device-width",
   initialScale: 1,
 };
@@ -31,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
       </body>

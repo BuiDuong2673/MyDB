@@ -66,7 +66,7 @@ export function Sidebar({
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-border">
         {!isCollapsed && (
-          <span className="font-semibold text-sm">AI Assistant</span>
+          <span className="font-semibold text-sm text-primary">MyDB</span>
         )}
         <div className="flex items-center gap-1">
           <Tooltip content="New chat" side="bottom">

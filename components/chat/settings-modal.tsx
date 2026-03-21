@@ -46,10 +46,9 @@ export function SettingsModal({
               onChange={(e) => onUpdateSettings({ model: e.target.value })}
               className="w-full px-3 py-2 bg-muted border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
-              <option value="gemini-pro">Gemini Pro</option>
-              <option value="gemini-pro-vision">Gemini Pro Vision</option>
-              <option value="gpt-4">GPT-4</option>
-              <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+              <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+              <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite</option>
+              <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
             </select>
           </div>
 

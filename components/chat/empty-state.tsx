@@ -1,4 +1,4 @@
-import { Sparkles, Code, Lightbulb, MessageSquare } from "lucide-react";
+import { TrainFront, MapPin, Clock, Route } from "lucide-react";
 
 interface SuggestionCardProps {
   icon: React.ReactNode;
@@ -31,28 +31,32 @@ interface EmptyStateProps {
 export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
   const suggestions = [
     {
-      icon: <Code className="w-5 h-5" />,
-      title: "Write code",
-      description: "Generate code in any language",
-      message: "Write a function to calculate the fibonacci sequence in TypeScript",
+      icon: <Route className="w-5 h-5" />,
+      title: "Plan a trip",
+      description: "Connections, duration, and changes",
+      message:
+        "I need a train from Berlin to Munich tomorrow morning. What are good options with few changes?",
     },
     {
-      icon: <Lightbulb className="w-5 h-5" />,
-      title: "Explain concepts",
-      description: "Break down complex topics",
-      message: "Explain how async/await works in JavaScript",
+      icon: <MapPin className="w-5 h-5" />,
+      title: "Stations & stops",
+      description: "Find platforms and local tips",
+      message:
+        "What should I know about arriving at Frankfurt (Main) Hauptbahnhof with luggage?",
     },
     {
-      icon: <MessageSquare className="w-5 h-5" />,
-      title: "Creative writing",
-      description: "Get help with content",
-      message: "Help me write a professional email to request a meeting",
+      icon: <Clock className="w-5 h-5" />,
+      title: "Timing & delays",
+      description: "Buffers and alternatives",
+      message:
+        "My connection is 8 minutes. Is that realistic if the first train is often a few minutes late?",
     },
     {
-      icon: <Sparkles className="w-5 h-5" />,
-      title: "Brainstorm ideas",
-      description: "Generate creative solutions",
-      message: "Give me 5 innovative app ideas for productivity",
+      icon: <TrainFront className="w-5 h-5" />,
+      title: "Tickets & savings",
+      description: "Saver fares and passes",
+      message:
+        "When is a day ticket better than two single tickets for regional travel in Germany?",
     },
   ];
 
@@ -60,14 +64,14 @@ export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
     <div className="flex-1 flex flex-col items-center justify-center p-8">
       <div className="max-w-2xl w-full space-y-8">
         <div className="text-center space-y-4">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary">
-            <Sparkles className="w-8 h-8 text-primary-foreground" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary shadow-md">
+            <TrainFront className="w-8 h-8 text-primary-foreground" />
           </div>
           <h1 className="text-3xl font-bold text-foreground text-balance">
-            How can I help you today?
+            Where would you like to go?
           </h1>
           <p className="text-muted-foreground text-balance max-w-md mx-auto">
-            I'm your AI assistant, ready to help with coding, writing, analysis, and much more.
+            MyDB helps you plan rail journeys—routes, timing, and travel tips tailored to your trip.
           </p>
         </div>
 
