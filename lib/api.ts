@@ -1,4 +1,5 @@
 import { Message, ChatConversation, UserProfile, AppSettings } from "./types";
+import { sendChatAction } from "./convex-chat-action";
 import { generateId } from "./utils";
 
 // ============================================
@@ -15,7 +16,7 @@ const mockConversations: ChatConversation[] = [
   },
   {
     id: "2",
-    title: "Python best practices",
+    title: "API design patterns",
     messages: [],
     createdAt: new Date(Date.now() - 172800000),
     updatedAt: new Date(Date.now() - 172800000),
@@ -120,46 +121,52 @@ export async function updateConversationTitle(
 }
 
 // ============================================
-// CHAT API (Next.js proxies to Python — see app/api/chat/route.ts)
+// CHAT API — Convex action only (`convex/chat.ts` → Gemini). Set `NEXT_PUBLIC_CONVEX_URL`.
 // ============================================
 
 /**
- * Sends chat history to the server. Next.js `POST /api/chat` proxies to the Python backend
- * (see `PYTHON_BACKEND_URL`); Gemini is invoked in Python only.
+ * Sends chat history to the assistant via the Convex `sendChat` action.
  */
 export async function sendMessageToAI(
   messages: Message[],
   settings: AppSettings
 ): Promise<string> {
-  const response = await fetch("/api/chat", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const convexUrl =
+    typeof process !== "undefined"
+      ? process.env.NEXT_PUBLIC_CONVEX_URL?.trim()
+      : undefined;
+
+  if (!convexUrl) {
+    throw new Error(
+      "Missing NEXT_PUBLIC_CONVEX_URL. Run `npm run convex:dev`, copy your deployment URL into .env.local, and set GEMINI_API_KEY in the Convex dashboard."
+    );
+  }
+
+  const payload = {
+    messages: messages.map((message) => ({
+      role: message.role,
+      content: message.content,
+    })),
+    settings: {
+      model: settings.model,
+      temperature: settings.temperature,
+      maxTokens: settings.maxTokens,
     },
-    body: JSON.stringify({
-      messages: messages.map((message) => ({
-        role: message.role,
-        content: message.content,
-      })),
-      settings: {
-        model: settings.model,
-        temperature: settings.temperature,
-        maxTokens: settings.maxTokens,
-      },
-    }),
-  });
+  };
 
-  const data = (await response.json()) as { text?: string; error?: string };
-
-  if (!response.ok) {
-    throw new Error(data.error ?? "Failed to get a response from the assistant.");
+  const { ConvexHttpClient } = await import("convex/browser");
+  const client = new ConvexHttpClient(convexUrl);
+  try {
+    const result = await client.action(sendChatAction, payload);
+    if (!result?.text) {
+      throw new Error("The assistant returned an empty response.");
+    }
+    return result.text;
+  } catch (e) {
+    const msg =
+      e instanceof Error ? e.message : "Failed to get a response from the assistant.";
+    throw new Error(msg);
   }
-
-  if (!data.text) {
-    throw new Error("The assistant returned an empty response.");
-  }
-
-  return data.text;
 }
 
 /**
