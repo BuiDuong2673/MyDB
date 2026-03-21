@@ -57,16 +57,8 @@ function sanitizeMaxTokens(maxTokens?: number): number {
   return Math.max(1, Math.min(8192, Math.floor(maxTokens)));
 }
 
-function getApiKey(): string | undefined {
-  return (
-    process.env.GEMINI_API_KEY ??
-    process.env.GOOGLE_GENERATIVE_AI_API_KEY ??
-    process.env.GOOGLE_API_KEY
-  );
-}
-
 export async function POST(request: Request) {
-  const apiKey = getApiKey();
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
       { error: "Missing GEMINI_API_KEY in server environment." },
