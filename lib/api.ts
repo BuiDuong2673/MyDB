@@ -37,7 +37,7 @@ const mockUser: UserProfile = {
 
 const mockSettings: AppSettings = {
   theme: "dark",
-  model: "gemini-pro",
+  model: "gemini-2.0-flash",
   temperature: 0.7,
   maxTokens: 2048,
 };
@@ -131,65 +131,35 @@ export async function sendMessageToAI(
   messages: Message[],
   settings: AppSettings
 ): Promise<string> {
-  // TODO: Replace with actual Gemini API call
-  // const response = await fetch('https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent', {
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //     'Authorization': `Bearer ${process.env.GEMINI_API_KEY}`,
-  //   },
-  //   body: JSON.stringify({
-  //     contents: messages.map(m => ({
-  //       role: m.role === 'assistant' ? 'model' : 'user',
-  //       parts: [{ text: m.content }],
-  //     })),
-  //     generationConfig: {
-  //       temperature: settings.temperature,
-  //       maxOutputTokens: settings.maxTokens,
-  //     },
-  //   }),
-  // });
-  // const data = await response.json();
-  // return data.candidates[0].content.parts[0].text;
+  const response = await fetch("/api/chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      messages: messages.map((message) => ({
+        role: message.role,
+        content: message.content,
+      })),
+      settings: {
+        model: settings.model,
+        temperature: settings.temperature,
+        maxTokens: settings.maxTokens,
+      },
+    }),
+  });
 
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1500));
+  const data = (await response.json()) as { text?: string; error?: string };
 
-  const lastMessage = messages[messages.length - 1];
-  
-  // Return mock responses based on keywords
-  if (lastMessage.content.toLowerCase().includes("code")) {
-    return `Here's an example code snippet:
-
-\`\`\`typescript
-function greet(name: string): string {
-  return \`Hello, \${name}! Welcome to our AI Assistant.\`;
-}
-
-// Usage
-const message = greet("Developer");
-console.log(message);
-\`\`\`
-
-This function takes a name parameter and returns a personalized greeting. The template literal syntax makes it easy to embed variables directly in the string.`;
+  if (!response.ok) {
+    throw new Error(data.error ?? "Failed to get a response from Gemini.");
   }
 
-  if (lastMessage.content.toLowerCase().includes("help")) {
-    return `I'd be happy to help! Here are some things I can assist you with:
-
-1. **Code Generation** - I can write code in various programming languages
-2. **Explanations** - I can explain complex concepts in simple terms
-3. **Problem Solving** - I can help debug issues or find solutions
-4. **Creative Writing** - I can help with content creation
-
-What would you like to explore today?`;
+  if (!data.text) {
+    throw new Error("Gemini returned an empty response.");
   }
 
-  return `Thank you for your message! I've processed your request about "${lastMessage.content.substring(0, 50)}${lastMessage.content.length > 50 ? "..." : ""}".
-
-This is a simulated response from the AI Assistant. In production, this would be replaced with actual responses from the Gemini API or another language model provider.
-
-The integration is designed to be easily swapped out with real API calls - just update the \`sendMessageToAI\` function in \`lib/api.ts\`.`;
+  return data.text;
 }
 
 /**
