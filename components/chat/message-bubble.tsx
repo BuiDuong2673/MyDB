@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { formatTimestamp } from "@/lib/utils";
 import type { Message } from "@/lib/types";
 import { User, Sparkles, Copy, Check } from "lucide-react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -13,15 +13,54 @@ interface MessageBubbleProps {
   message: Message;
 }
 
-export function MessageBubble({ message }: MessageBubbleProps) {
+function CodeBlockWithCopy({
+  language,
+  children,
+}: {
+  language: string;
+  children: ReactNode;
+}) {
   const [copied, setCopied] = useState(false);
-  const isUser = message.role === "user";
+  const codeText = String(children).replace(/\n$/, "");
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(message.content);
+    await navigator.clipboard.writeText(codeText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  return (
+    <div className="relative group/code my-4">
+      <div className="flex items-center justify-between px-4 py-2 bg-muted rounded-t-lg border-b border-border">
+        <span className="text-xs text-muted-foreground font-mono">{language}</span>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Copy code"
+        >
+          {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+        </button>
+      </div>
+      <SyntaxHighlighter
+        style={oneDark}
+        language={language}
+        PreTag="div"
+        customStyle={{
+          margin: 0,
+          borderTopLeftRadius: 0,
+          borderTopRightRadius: 0,
+          background: "var(--muted)",
+        }}
+      >
+        {codeText}
+      </SyntaxHighlighter>
+    </div>
+  );
+}
+
+export function MessageBubble({ message }: MessageBubbleProps) {
+  const isUser = message.role === "user";
 
   return (
     <div
@@ -72,36 +111,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                 }
 
                 return (
-                  <div className="relative group/code my-4">
-                    <div className="flex items-center justify-between px-4 py-2 bg-muted rounded-t-lg border-b border-border">
-                      <span className="text-xs text-muted-foreground font-mono">
-                        {match[1]}
-                      </span>
-                      <button
-                        onClick={handleCopy}
-                        className="text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        {copied ? (
-                          <Check className="w-4 h-4" />
-                        ) : (
-                          <Copy className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
-                    <SyntaxHighlighter
-                      style={oneDark}
-                      language={match[1]}
-                      PreTag="div"
-                      customStyle={{
-                        margin: 0,
-                        borderTopLeftRadius: 0,
-                        borderTopRightRadius: 0,
-                        background: "var(--muted)",
-                      }}
-                    >
-                      {String(children).replace(/\n$/, "")}
-                    </SyntaxHighlighter>
-                  </div>
+                  <CodeBlockWithCopy language={match[1]}>{children}</CodeBlockWithCopy>
                 );
               },
               p({ children }) {
