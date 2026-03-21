@@ -30,8 +30,8 @@ export default function ChatPage() {
   const [currentConversationId, setCurrentConversationId] = useState<string>();
   const [user, setUser] = useState<UserProfile>();
   const [settings, setSettings] = useState<AppSettings>({
-    theme: "dark",
-    model: "gemini-2.0-flash",
+    theme: "light",
+    model: "gemini-2.5-flash",
     temperature: 0.7,
     maxTokens: 2048,
   });
@@ -130,7 +130,8 @@ export default function ChatPage() {
       {/* Main Chat Area */}
       <main className="flex-1 flex flex-col min-w-0">
         <ChatHeader
-          title={currentConversation?.title}
+          sidebarOpen={sidebarOpen}
+          subtitle={currentConversation?.title}
           onClearChat={clearMessages}
         />
 

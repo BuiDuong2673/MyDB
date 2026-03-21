@@ -1,1 +1,27 @@
+# Environment & secrets
 .env
+.env.*
+!.env.example
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Dependencies (never commit — includes large platform binaries e.g. @next/swc-*)
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Debug / logs
+npm-debug.log*
+pnpm-debug.log*
+*.log

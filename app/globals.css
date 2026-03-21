@@ -28,26 +28,27 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Deutsche Bahn–style brand red + light shell (DB Navigator–inspired) */
 :root {
-  --background: #0a0a0a;
-  --foreground: #fafafa;
-  --card: #111111;
-  --card-foreground: #fafafa;
-  --popover: #111111;
-  --popover-foreground: #fafafa;
-  --primary: #ffffff;
-  --primary-foreground: #0a0a0a;
-  --secondary: #1a1a1a;
-  --secondary-foreground: #fafafa;
-  --muted: #171717;
-  --muted-foreground: #a1a1aa;
-  --accent: #262626;
-  --accent-foreground: #fafafa;
-  --destructive: #ef4444;
-  --destructive-foreground: #fafafa;
-  --border: #262626;
-  --input: #262626;
-  --ring: #3f3f46;
+  --background: #f4f4f5;
+  --foreground: #18181b;
+  --card: #ffffff;
+  --card-foreground: #18181b;
+  --popover: #ffffff;
+  --popover-foreground: #18181b;
+  --primary: #ec0016;
+  --primary-foreground: #ffffff;
+  --secondary: #e4e4e7;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #fee2e2;
+  --accent-foreground: #991b1b;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #ec0016;
   --radius: 0.75rem;
 }
 
@@ -128,7 +129,7 @@ body {
 }
 
 .prose a {
-  color: #60a5fa;
+  color: var(--primary);
   text-decoration: underline;
 }
 
