@@ -120,12 +120,12 @@ export async function updateConversationTitle(
 }
 
 // ============================================
-// GEMINI API INTEGRATION (Placeholder)
+// CHAT API (Next.js proxies to Python — see app/api/chat/route.ts)
 // ============================================
 
 /**
- * Send a message to the Gemini API and get a response
- * @placeholder Replace with actual Gemini API call
+ * Sends chat history to the server. Next.js `POST /api/chat` proxies to the Python backend
+ * (see `PYTHON_BACKEND_URL`); Gemini is invoked in Python only.
  */
 export async function sendMessageToAI(
   messages: Message[],
@@ -152,11 +152,11 @@ export async function sendMessageToAI(
   const data = (await response.json()) as { text?: string; error?: string };
 
   if (!response.ok) {
-    throw new Error(data.error ?? "Failed to get a response from Gemini.");
+    throw new Error(data.error ?? "Failed to get a response from the assistant.");
   }
 
   if (!data.text) {
-    throw new Error("Gemini returned an empty response.");
+    throw new Error("The assistant returned an empty response.");
   }
 
   return data.text;

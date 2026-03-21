@@ -2,7 +2,7 @@
 
 **The AI travel advisor that finds the perfect train for your journey.**
 
-A [Next.js](https://nextjs.org/) chat app with a Deutsche Bahn–inspired UI. The client talks to Google Gemini through a server-side API route; conversations and settings are mocked today with hooks ready for a real backend.
+A [Next.js](https://nextjs.org/) chat app with a Deutsche Bahn–inspired UI. The browser calls **`POST /api/chat`** on the Next.js server, which **proxies** the request to a **Python (FastAPI)** service that calls Google Gemini. The API key stays on the Python process (and in `.env` / `.env.local`); the client never sees it. Conversations and settings are still mocked in the UI with hooks ready for a real database.
 
 ---
 
@@ -12,7 +12,7 @@ A [Next.js](https://nextjs.org/) chat app with a Deutsche Bahn–inspired UI. Th
 
 | File | Role |
 |------|------|
-| `package.json` | Project metadata, npm scripts (`dev`, `build`, `start`, `lint`), and dependency list. |
+| `package.json` | Project metadata, npm scripts (`dev`, `dev:backend`, `build`, `start`, `lint`), and dependency list. |
 | `package-lock.json` | npm lockfile: exact dependency tree for reproducible installs. |
 | `pnpm-lock.yaml` | pnpm lockfile: same purpose if you use pnpm instead of npm. |
 | `next.config.ts` | Next.js configuration (e.g. React Compiler). |
@@ -37,7 +37,14 @@ A [Next.js](https://nextjs.org/) chat app with a Deutsche Bahn–inspired UI. Th
 
 | File | Role |
 |------|------|
-| `app/api/chat/route.ts` | `POST` handler: validates messages, calls Gemini `generateContent`, returns JSON `{ text }`. Expects `GEMINI_API_KEY` on the server. |
+| `app/api/chat/route.ts` | `POST` handler: forwards the JSON body to the Python service at `PYTHON_BACKEND_URL` (same-origin for the browser — no CORS). Returns the upstream status and body. |
+
+### `backend/`
+
+| File | Role |
+|------|------|
+| `backend/main.py` | FastAPI app: `POST /api/chat` (same contract as `lib/api.ts`), `GET /health`. Calls Gemini via `google-generativeai`; reads `GEMINI_API_KEY` from the environment (loads repo-root `.env` / `.env.local`). |
+| `backend/requirements.txt` | Python dependencies (FastAPI, Uvicorn, Gemini SDK, python-dotenv). |
 
 ### `lib/` — Shared logic & types
 
@@ -45,7 +52,7 @@ A [Next.js](https://nextjs.org/) chat app with a Deutsche Bahn–inspired UI. Th
 |------|------|
 | `lib/types.ts` | TypeScript types: `Message`, `ChatConversation`, `UserProfile`, `AppSettings`. |
 | `lib/utils.ts` | Helpers: `cn()` for class names, `formatTimestamp()`, `generateId()`. |
-| `lib/api.ts` | Client-side API layer: mock user/conversations/settings, `sendMessageToAI` → `/api/chat`, and placeholder streaming. |
+| `lib/api.ts` | Client-side API layer: mock user/conversations/settings, `sendMessageToAI` → same-origin `/api/chat` (proxied to Python), and placeholder streaming. |
 
 ### `hooks/`
 
@@ -107,12 +114,46 @@ npm install $(grep -v '^#' requirements.txt | grep -v '^$')
 ## Environment variables
 
 1. **Copy the template** from `.env.example` to `.env.local` (recommended) or `.env` in the project root.
-2. **Set `GEMINI_API_KEY`** to your Google Gemini API key ([AI Studio](https://aistudio.google.com/apikey)).
-3. **Restart** the dev server after changing env files.
+2. **Set `PYTHON_BACKEND_URL`** to the Python API base URL (default in `.env.example`: `http://127.0.0.1:8000`). Next.js uses this **server-side only** to proxy `/api/chat`.
+3. **Set `GEMINI_API_KEY`** to your Google Gemini API key ([AI Studio](https://aistudio.google.com/apikey)). It is read by the **Python** process (`backend/main.py`), not by the browser.
+4. **Restart** both the Next.js and Python dev processes after changing env files.
+
+---
+
+## Python backend
+
+Install dependencies once (a virtual environment under `backend/` is recommended):
+
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+Start the API (from the `backend/` directory, with the venv activated):
+
+```bash
+python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Or from the **repository root**: `npm run dev:backend` (uses your default `python` / `python3`; install `requirements.txt` into that environment first).
+
+The Google `google-generativeai` Python package shows a deprecation notice in some versions; migrating to the newer `google-genai` SDK is optional and can be done later.
 
 ---
 
 ## Run locally
+
+You need **two terminals**: Python API first, then Next.js.
+
+**Terminal 1 — Python**
+
+```bash
+cd backend && source .venv/bin/activate && python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+```
+
+**Terminal 2 — Next.js**
 
 ```bash
 npm install
