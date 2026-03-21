@@ -22,17 +22,6 @@ export default function ChatPage() {
     toggleCollapse: toggleSidebarCollapse,
   } = useSidebar();
 
-  // Chat state
-  const { messages, isLoading, error, sendMessage, clearMessages, stopGeneration } =
-    useChat({
-      onError: (err) => {
-        addToast({
-          type: "error",
-          message: err.message || "An error occurred while processing your message",
-        });
-      },
-    });
-
   // Toast state
   const { toasts, addToast, removeToast } = useToast();
 
@@ -42,11 +31,23 @@ export default function ChatPage() {
   const [user, setUser] = useState<UserProfile>();
   const [settings, setSettings] = useState<AppSettings>({
     theme: "dark",
-    model: "gemini-pro",
+    model: "gemini-2.0-flash",
     temperature: 0.7,
     maxTokens: 2048,
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // Chat state
+  const { messages, isLoading, error, sendMessage, clearMessages, stopGeneration } =
+    useChat({
+      settings,
+      onError: (err) => {
+        addToast({
+          type: "error",
+          message: err.message || "An error occurred while processing your message",
+        });
+      },
+    });
 
   // Load initial data
   useEffect(() => {

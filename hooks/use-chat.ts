@@ -22,7 +22,7 @@ interface UseChatReturn {
 
 const defaultSettings: AppSettings = {
   theme: "dark",
-  model: "gemini-pro",
+  model: "gemini-2.0-flash",
   temperature: 0.7,
   maxTokens: 2048,
 };
