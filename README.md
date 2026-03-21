@@ -2,7 +2,7 @@
 
 **The AI travel advisor that finds the perfect train for your journey.**
 
-A [Next.js](https://nextjs.org/) chat app with a Deutsche Bahn–inspired UI. The browser calls **`POST /api/chat`** on the Next.js server, which **proxies** the request to a **Python (FastAPI)** service that calls Google Gemini. The API key stays on the Python process (and in `.env` / `.env.local`); the client never sees it. Conversations and settings are still mocked in the UI with hooks ready for a real database.
+A [Next.js](https://nextjs.org/) chat app with a Deutsche Bahn–inspired UI. Chat uses **[Convex](https://convex.dev/)**: `lib/api.ts` calls a Convex **action** (`convex/chat.ts`) that talks to Google Gemini. **`GEMINI_API_KEY`** is set in the **Convex** dashboard (not exposed to the browser). **`NEXT_PUBLIC_CONVEX_URL`** in `.env.local` / Vercel points the client at your deployment. Conversations and settings are still mocked in the UI with hooks ready for a real database.
 
 ---
 
@@ -12,7 +12,7 @@ A [Next.js](https://nextjs.org/) chat app with a Deutsche Bahn–inspired UI. Th
 
 | File | Role |
 |------|------|
-| `package.json` | Project metadata, npm scripts (`dev`, `dev:backend`, `build`, `start`, `lint`), and dependency list. |
+| `package.json` | Project metadata, npm scripts (`dev`, `convex:dev`, `convex:deploy`, `build`, `start`, `lint`), and dependency list. |
 | `package-lock.json` | npm lockfile: exact dependency tree for reproducible installs. |
 | `pnpm-lock.yaml` | pnpm lockfile: same purpose if you use pnpm instead of npm. |
 | `next.config.ts` | Next.js configuration (e.g. React Compiler). |
@@ -20,8 +20,8 @@ A [Next.js](https://nextjs.org/) chat app with a Deutsche Bahn–inspired UI. Th
 | `postcss.config.mjs` | PostCSS pipeline: wires Tailwind CSS v4 via `@tailwindcss/postcss`. |
 | `next-env.d.ts` | Auto-generated Next.js type references (do not edit by hand). |
 | `requirements.txt` | Flat list of npm packages (mirrors `package.json`); use with the install command below. |
-| `.env.example` | **Tracked template:** which environment variables exist and what they are for (no secrets). |
-| `.env` | **Local only (gitignored):** create by copying `.env.example`, then add your secret values (never commit). |
+| `.env.example` | **Tracked template:** `NEXT_PUBLIC_CONVEX_URL` (no secrets). |
+| `.env` | **Local only (gitignored):** create by copying `.env.example`, then add your values (never commit). |
 | `.gitignore` | Files and folders ignored by Git (env files, `node_modules`, `.next`, logs, editor junk). |
 | `LICENSE` | Legal license for the project. |
 
@@ -33,18 +33,12 @@ A [Next.js](https://nextjs.org/) chat app with a Deutsche Bahn–inspired UI. Th
 | `app/page.tsx` | Main chat page: wires sidebar, header, canvas, input, settings modal, and toasts. |
 | `app/globals.css` | Tailwind v4 import, design tokens (`@theme`), and DB-style light theme variables. |
 
-### `app/api/chat/`
+### `convex/`
 
 | File | Role |
 |------|------|
-| `app/api/chat/route.ts` | `POST` handler: forwards the JSON body to the Python service at `PYTHON_BACKEND_URL` (same-origin for the browser — no CORS). Returns the upstream status and body. |
-
-### `backend/`
-
-| File | Role |
-|------|------|
-| `backend/main.py` | FastAPI app: `POST /api/chat` (same contract as `lib/api.ts`), `GET /health`. Calls Gemini via `google-generativeai`; reads `GEMINI_API_KEY` from the environment (loads repo-root `.env` / `.env.local`). |
-| `backend/requirements.txt` | Python dependencies (FastAPI, Uvicorn, Gemini SDK, python-dotenv). |
+| `convex/schema.ts` | Convex schema (empty until you add tables). |
+| `convex/chat.ts` | Action `sendChat`: same payload as `lib/api.ts`, calls Gemini REST API. **`GEMINI_API_KEY` is set in the Convex dashboard.** |
 
 ### `lib/` — Shared logic & types
 
@@ -52,7 +46,8 @@ A [Next.js](https://nextjs.org/) chat app with a Deutsche Bahn–inspired UI. Th
 |------|------|
 | `lib/types.ts` | TypeScript types: `Message`, `ChatConversation`, `UserProfile`, `AppSettings`. |
 | `lib/utils.ts` | Helpers: `cn()` for class names, `formatTimestamp()`, `generateId()`. |
-| `lib/api.ts` | Client-side API layer: mock user/conversations/settings, `sendMessageToAI` → same-origin `/api/chat` (proxied to Python), and placeholder streaming. |
+| `lib/api.ts` | Client-side API layer: mock user/conversations/settings; `sendMessageToAI` → Convex `chat:sendChat`, plus placeholder streaming. |
+| `lib/convex-chat-action.ts` | `makeFunctionReference("chat:sendChat")` for the Convex HTTP client (no `convex codegen` required). |
 
 ### `hooks/`
 
@@ -111,54 +106,40 @@ npm install $(grep -v '^#' requirements.txt | grep -v '^$')
 
 ---
 
-## Environment variables
+## Convex setup
 
-1. **Copy the template** from `.env.example` to `.env.local` (recommended) or `.env` in the project root.
-2. **Set `PYTHON_BACKEND_URL`** to the Python API base URL (default in `.env.example`: `http://127.0.0.1:8000`). Next.js uses this **server-side only** to proxy `/api/chat`.
-3. **Set `GEMINI_API_KEY`** to your Google Gemini API key ([AI Studio](https://aistudio.google.com/apikey)). It is read by the **Python** process (`backend/main.py`), not by the browser.
-4. **Restart** both the Next.js and Python dev processes after changing env files.
+1. **Link a project:** `npm run convex:dev` (or `npx convex dev`) — log in, create or select a deployment.
+2. **Secrets:** In [Convex Dashboard](https://dashboard.convex.dev/) → your deployment → **Settings → Environment Variables**, add **`GEMINI_API_KEY`** ([AI Studio](https://aistudio.google.com/apikey)).
+3. **Deploy functions:** `npm run convex:deploy` (or `npx convex deploy`) before or after deploying the Next app.
+4. **Next.js / Vercel:** Set **`NEXT_PUBLIC_CONVEX_URL`** to your Convex deployment URL (e.g. `https://happy-animal-123.convex.cloud`).
 
 ---
 
-## Python backend
+## Environment variables
 
-Install dependencies once (a virtual environment under `backend/` is recommended):
-
-```bash
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-Start the API (from the `backend/` directory, with the venv activated):
-
-```bash
-python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
-```
-
-Or from the **repository root**: `npm run dev:backend` (uses your default `python` / `python3`; install `requirements.txt` into that environment first).
-
-The Google `google-generativeai` Python package shows a deprecation notice in some versions; migrating to the newer `google-genai` SDK is optional and can be done later.
+1. **Copy** `.env.example` to `.env.local` (recommended) or `.env`.
+2. Set **`NEXT_PUBLIC_CONVEX_URL`** to your Convex deployment URL (from `convex dev` output or the dashboard).
+3. Set **`GEMINI_API_KEY`** in the **Convex** dashboard only (not required in Vercel for the model call).
+4. Restart `npm run dev` after changing `.env.local`.
 
 ---
 
 ## Run locally
 
-You need **two terminals**: Python API first, then Next.js.
-
-**Terminal 1 — Python**
+**Terminal 1 — Convex** (syncs functions; shows deployment URL):
 
 ```bash
-cd backend && source .venv/bin/activate && python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+npm run convex:dev
 ```
 
 **Terminal 2 — Next.js**
 
 ```bash
 npm install
-# Configure .env.local or .env (see "Environment variables" above)
+# Add NEXT_PUBLIC_CONVEX_URL to .env.local (see Environment variables)
 npm run dev
 ```
 
-Open the URL shown in the terminal (usually `http://localhost:3000`).
+Open `http://localhost:3000`.
+
+**Vercel:** Set **`NEXT_PUBLIC_CONVEX_URL`** in the project environment variables. Run **`npm run convex:deploy`** so production uses the latest Convex functions.
