@@ -36,8 +36,8 @@ const mockUser: UserProfile = {
 };
 
 const mockSettings: AppSettings = {
-  theme: "dark",
-  model: "gemini-2.0-flash",
+  theme: "light",
+  model: "gemini-2.5-flash",
   temperature: 0.7,
   maxTokens: 2048,
 };

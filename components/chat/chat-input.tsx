@@ -19,7 +19,7 @@ export function ChatInput({
   onStop,
   isLoading = false,
   disabled = false,
-  placeholder = "Message AI Assistant...",
+  placeholder = "Message MyDB...",
 }: ChatInputProps) {
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);

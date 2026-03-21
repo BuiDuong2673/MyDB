@@ -46,7 +46,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       <div className="flex-1 min-w-0 space-y-2">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-sm">
-            {isUser ? "You" : "AI Assistant"}
+            {isUser ? "You" : "MyDB"}
           </span>
           <span className="text-xs text-muted-foreground">
             {formatTimestamp(message.timestamp)}

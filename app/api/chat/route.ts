@@ -25,11 +25,20 @@ interface GeminiResponse {
   candidates?: GeminiCandidate[];
 }
 
-const DEFAULT_MODEL = "gemini-2.0-flash";
+const DEFAULT_MODEL = "gemini-2.5-flash";
+
+/** Older model IDs may 403/404 for new API keys; map to current stable IDs. */
+const MODEL_ALIASES: Record<string, string> = {
+  "gemini-2.0-flash": "gemini-2.5-flash",
+  "gemini-2.0-flash-lite": "gemini-2.5-flash-lite",
+  "gemini-1.5-flash": "gemini-2.5-flash",
+  "gemini-1.5-pro": "gemini-2.5-pro",
+};
 
 function sanitizeModel(model?: string): string {
-  if (!model) return DEFAULT_MODEL;
-  return model.startsWith("gemini-") ? model : DEFAULT_MODEL;
+  const raw =
+    !model || !model.startsWith("gemini-") ? DEFAULT_MODEL : model.trim();
+  return MODEL_ALIASES[raw] ?? raw;
 }
 
 function sanitizeTemperature(temperature?: number): number {
