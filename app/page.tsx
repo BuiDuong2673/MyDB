@@ -38,7 +38,7 @@ export default function ChatPage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Chat state
-  const { messages, isLoading, error, sendMessage, clearMessages, stopGeneration } =
+  const { messages, isLoading, sendMessage, clearMessages, stopGeneration } =
     useChat({
       settings,
       onError: (err) => {
@@ -67,16 +67,6 @@ export default function ChatPage() {
     };
     loadData();
   }, []);
-
-  // Show error toast when chat error occurs
-  useEffect(() => {
-    if (error) {
-      addToast({
-        type: "error",
-        message: error.message || "Something went wrong. Please try again.",
-      });
-    }
-  }, [error, addToast]);
 
   const handleNewChat = useCallback(() => {
     setCurrentConversationId(undefined);
