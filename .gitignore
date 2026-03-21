@@ -25,3 +25,11 @@ out/
 npm-debug.log*
 pnpm-debug.log*
 *.log
+
+# Convex AI / Cursor agent skills (optional; reinstall with `npx convex ai-files install`)
+# Not required for `npm run build`, deploy, or runtime — safe to omit from GitHub.
+.agents/
+skills-lock.json
+AGENTS.md
+CLAUDE.md
+convex/_generated/ai/
