@@ -10,10 +10,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 interface ChatCanvasProps {
   messages: Message[];
   isLoading: boolean;
-  onSuggestionClick: (message: string) => void;
+  /** Fills the composer with a prompt template; does not send. */
+  onSuggestionSelect: (template: string) => void;
 }
 
-export function ChatCanvas({ messages, isLoading, onSuggestionClick }: ChatCanvasProps) {
+export function ChatCanvas({ messages, isLoading, onSuggestionSelect }: ChatCanvasProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -21,7 +22,7 @@ export function ChatCanvas({ messages, isLoading, onSuggestionClick }: ChatCanva
   }, [messages, isLoading]);
 
   if (messages.length === 0) {
-    return <EmptyState onSuggestionClick={onSuggestionClick} />;
+    return <EmptyState onSuggestionSelect={onSuggestionSelect} />;
   }
 
   return (
