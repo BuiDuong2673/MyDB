@@ -12,6 +12,9 @@ __pycache__/
 # Dependencies (never commit — includes large platform binaries e.g. @next/swc-*)
 node_modules/
 
+# pnpm content-addressable store (can exceed GitHub 100MB limit; never commit)
+.pnpm-store/
+
 # Next.js build output
 .next/
 out/
