@@ -1,9 +1,9 @@
-import { defaultAgent } from "./defaultAgent";
 import { RETRIEVE_SPECIALIZED_INFORMATION } from "./toolDeclarations";
+import { searchTripAgent } from "./searchTripAgent";
 import type { Agent, AgentInput, AgentResult } from "./types";
 
 const agentsByToolName: Record<string, Agent> = {
-  [RETRIEVE_SPECIALIZED_INFORMATION]: defaultAgent,
+  [RETRIEVE_SPECIALIZED_INFORMATION]: searchTripAgent,
 };
 
 function normalizeArgs(raw: unknown): Record<string, unknown> {

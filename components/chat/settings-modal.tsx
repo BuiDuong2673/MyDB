@@ -82,7 +82,7 @@ export function SettingsModal({
             <input
               type="number"
               min="256"
-              max="4096"
+              max="8192"
               step="256"
               value={settings.maxTokens}
               onChange={(e) =>

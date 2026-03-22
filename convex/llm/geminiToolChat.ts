@@ -10,11 +10,20 @@ import {
 
 const MAX_TOOL_ROUNDS = 8;
 
-const SYSTEM_INSTRUCTION = `You are MyDB, a helpful rail-travel assistant for Germany and Europe.
+const SYSTEM_INSTRUCTION = `You are MyDB, a professional travel advisor in Germany. When you need data you do not have or are unsure, call the appropriate agent.
 
-You may call the provided tools to retrieve factual information that must not be guessed (routes, stations, schedules, ticket rules). When the user's message is unclear or missing required details (e.g. origin, destination, date, time window), do not call tools—respond with a short, polite question in plain text to get what you need.
+Trip search: tool responses are JSON in the text field (schemaVersion, query, routes with segments and times). Parse it, answer in natural language, and do not paste raw JSON.
 
-After a tool returns data, incorporate it into a clear, concise answer for the user.`;
+Trip lists: unless the user already specifies how many options or a selection strategy, show three routes (earliest arrival as the selection strategy) and ask if they want a different selection strategy
+or different number of options.
+
+Reply in concise and beautiful markdown. Format trips like this:
+example start:
+Option ...: from (starting place) at (starting time) to (destination place) at (destination time) Total Trip Duration: (duration)
+* Vehicle name (e.g Train S4): (boarding place) at (boarding time) -> (dropping place) at (dropping time) Trip Duration: (duration) Transfer Duration: (transfer duration)
+* Vehicle name (e.g Bus 1): (boarding place) at (boarding time) -> (dropping place) at (dropping time) Trip Duration: (duration) Transfer Duration: (transfer duration)
+example end
+The language of the answer must be in English.`;
 
 type GeminiPart = {
   text?: string;
@@ -110,6 +119,13 @@ function extractText(parts: GeminiPart[]): string {
     .trim();
 }
 
+function isMaxTokensFinish(finish: string | undefined): boolean {
+  return finish === "MAX_TOKENS";
+}
+
+const TRUNCATION_HINT =
+  "\n\n---\n*The reply was cut off at the output length limit. In Settings, increase **Max tokens** (up to 8192) or ask for a shorter trip summary.*";
+
 /**
  * Multi-turn Gemini chat with AUTO function calling: model may answer in text
  * (e.g. ask for clarification) or call agent tools; tool results are sent back until final text.
@@ -159,10 +175,41 @@ export async function runGeminiToolChat(
     const parts = modelContent.parts;
 
     if (!hasFunctionCall(parts)) {
-      const text = extractText(parts);
+      let text = extractText(parts);
       if (!text) {
         throw new Error("Gemini returned an empty text response.");
       }
+
+      let finishOut = finish;
+      if (isMaxTokensFinish(finishOut)) {
+        const gen = generationConfigFromSettings(input.settings);
+        if (gen.maxOutputTokens < 8192) {
+          const dataRetry = await postGenerate(url, {
+            ...baseBody,
+            contents,
+            generationConfig: {
+              ...gen,
+              maxOutputTokens: 8192,
+            },
+          });
+          const candR = dataRetry.candidates?.[0];
+          if (!dataRetry.promptFeedback?.blockReason && candR?.content?.parts?.length) {
+            const partsR = candR.content.parts;
+            if (!hasFunctionCall(partsR)) {
+              const textR = extractText(partsR);
+              if (textR.length > text.length) {
+                text = textR;
+              }
+              finishOut = candR.finishReason;
+            }
+          }
+        }
+      }
+
+      if (isMaxTokensFinish(finishOut)) {
+        text += TRUNCATION_HINT;
+      }
+
       return { text };
     }
 

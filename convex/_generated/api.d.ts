@@ -8,9 +8,9 @@
  * @module
  */
 
-import type * as agents_defaultAgent from "../agents/defaultAgent.js";
 import type * as agents_orchestrator from "../agents/orchestrator.js";
 import type * as agents_registry from "../agents/registry.js";
+import type * as agents_searchTripAgent from "../agents/searchTripAgent.js";
 import type * as agents_toolDeclarations from "../agents/toolDeclarations.js";
 import type * as agents_types from "../agents/types.js";
 import type * as chat from "../chat.js";
@@ -25,9 +25,9 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  "agents/defaultAgent": typeof agents_defaultAgent;
   "agents/orchestrator": typeof agents_orchestrator;
   "agents/registry": typeof agents_registry;
+  "agents/searchTripAgent": typeof agents_searchTripAgent;
   "agents/toolDeclarations": typeof agents_toolDeclarations;
   "agents/types": typeof agents_types;
   chat: typeof chat;

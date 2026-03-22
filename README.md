@@ -2,7 +2,7 @@
 
 **The AI travel advisor that finds the perfect train for your journey.**
 
-A [Next.js](https://nextjs.org/) chat app with a Deutsche Bahn–inspired UI. Chat uses **[Convex](https://convex.dev/)**: `lib/api.ts` calls a Convex **action** (`convex/chat.ts`) that runs **`runChatOrchestrator`**, which calls **Gemini first** with **function calling** (`convex/llm/geminiToolChat.ts`). The model may answer in plain text (including asking the user for missing details) or invoke **agent tools** registered in `convex/agents/` (e.g. `retrieve_specialized_information` → stub `defaultAgent` returning a fixed string until you add real retrieval). Tool results are sent back to Gemini until a final answer is produced. A simpler single-turn helper remains in `convex/llm/gemini.ts` (`generateWithGemini`). **`NEXT_PUBLIC_CONVEX_URL`** in `.env.local` / Vercel points the client at your deployment. **`GEMINI_API_KEY`** must be set in the **Convex** dashboard (not the browser). Conversations and settings are still mocked in the UI with hooks ready for a real database.
+A [Next.js](https://nextjs.org/) chat app with a Deutsche Bahn–inspired UI. Chat uses **[Convex](https://convex.dev/)**: `lib/api.ts` calls a Convex **action** (`convex/chat.ts`) that runs **`runChatOrchestrator`**, which calls **Gemini first** with **function calling** (`convex/llm/geminiToolChat.ts`). The model may answer in plain text (including asking the user for missing details) or invoke **`retrieve_specialized_information`**, which runs **`searchTripAgent`**: it calls the **Google Routes API** (`TRANSIT`) with `origin` and `destination` addresses, **`date` as `dd.mm.yyyy`**, and **`departureTime` as `HH:mm`** interpreted in **Europe/Berlin**, and returns up to a few alternative routes (Google’s limit). Tool results are sent back to Gemini until a final answer is produced. A simpler single-turn helper remains in `convex/llm/gemini.ts` (`generateWithGemini`). **`NEXT_PUBLIC_CONVEX_URL`** in `.env.local` / Vercel points the client at your deployment. **`GEMINI_API_KEY`** and **`GOOGLE_ROUTES_API_KEY`** (or **`GOOGLE_MAPS_API_KEY`**) belong in the **Convex** dashboard (not the browser). Conversations and settings are still mocked in the UI with hooks ready for a real database.
 
 ---
 
@@ -41,8 +41,8 @@ A [Next.js](https://nextjs.org/) chat app with a Deutsche Bahn–inspired UI. Ch
 | `convex/chat.ts` | Action `sendChat`: validates messages, then `runChatOrchestrator` (same payload shape as `lib/api.ts`). |
 | `convex/agents/types.ts` | Shared types: `Agent`, `AgentInput`, `AgentResult`, chat message and settings shapes. |
 | `convex/agents/toolDeclarations.ts` | Gemini `functionDeclarations` for agent tools (e.g. `retrieve_specialized_information`). |
-| `convex/agents/registry.ts` | Maps tool names to agents; `executeAgentTool` runs the stub or future real agents. |
-| `convex/agents/defaultAgent.ts` | Stub agent (`id: "default"`) — invoked via tools; returns a fixed string until you add retrieval logic. |
+| `convex/agents/registry.ts` | Maps tool names to agents; `executeAgentTool` dispatches to `searchTripAgent` for trip search. |
+| `convex/agents/searchTripAgent.ts` | Trip search agent: validates `dd.mm.yyyy` / `HH:mm`, calls Google Routes API (`TRANSIT`), formats route options as text. |
 | `convex/agents/orchestrator.ts` | `runChatOrchestrator` → `runGeminiToolChat` (Gemini-first, AUTO tools, multi-turn). |
 | `convex/llm/geminiShared.ts` | Shared Gemini URL, API key check, and generation settings sanitizers. |
 | `convex/llm/geminiToolChat.ts` | `runGeminiToolChat`: multi-turn `generateContent` with tools and `functionResponse` loop. |
@@ -55,7 +55,7 @@ A [Next.js](https://nextjs.org/) chat app with a Deutsche Bahn–inspired UI. Ch
 |------|------|
 | `lib/types.ts` | TypeScript types: `Message`, `ChatConversation`, `UserProfile`, `AppSettings`. |
 | `lib/utils.ts` | Helpers: `cn()` for class names, `formatTimestamp()`, `generateId()`. |
-| `lib/api.ts` | Client-side API layer: mock user/conversations/settings; `sendMessageToAI` → Convex `chat:sendChat` (Gemini tool loop + stub agents), plus placeholder streaming. |
+| `lib/api.ts` | Client-side API layer: mock user/conversations/settings; `sendMessageToAI` → Convex `chat:sendChat` (Gemini tool loop + trip search agent), plus placeholder streaming. |
 | `lib/convex-chat-action.ts` | `makeFunctionReference("chat:sendChat")` for the Convex HTTP client (no `convex codegen` required). |
 
 ### `hooks/`
@@ -118,7 +118,7 @@ npm install $(grep -v '^#' requirements.txt | grep -v '^$')
 ## Convex setup
 
 1. **Link a project:** `npm run convex:dev` (or `npx convex dev`) — log in, create or select a deployment.
-2. **Secrets:** In [Convex Dashboard](https://dashboard.convex.dev/) → your deployment → **Settings → Environment Variables**, add **`GEMINI_API_KEY`** ([AI Studio](https://aistudio.google.com/apikey)). Required for chat (Gemini-first orchestration).
+2. **Secrets:** In [Convex Dashboard](https://dashboard.convex.dev/) → your deployment → **Settings → Environment Variables**, add **`GEMINI_API_KEY`** ([AI Studio](https://aistudio.google.com/apikey)). Add **`GOOGLE_ROUTES_API_KEY`** (or **`GOOGLE_MAPS_API_KEY`**) with the [Routes API](https://developers.google.com/maps/documentation/routes) enabled for your Google Cloud project.
 3. **Deploy functions:** `npm run convex:deploy` (or `npx convex deploy`) before or after deploying the Next app.
 4. **Next.js / Vercel:** Set **`NEXT_PUBLIC_CONVEX_URL`** to your Convex deployment URL (e.g. `https://happy-animal-123.convex.cloud`).
 
@@ -128,7 +128,7 @@ npm install $(grep -v '^#' requirements.txt | grep -v '^$')
 
 1. **Copy** `.env.example` to `.env.local` (recommended) or `.env`.
 2. Set **`NEXT_PUBLIC_CONVEX_URL`** to your Convex deployment URL (from `convex dev` output or the dashboard).
-3. Set **`GEMINI_API_KEY`** in the **Convex** dashboard for the assistant to work. Do not put API keys in Vercel for server-side model calls.
+3. Set **`GEMINI_API_KEY`** and **`GOOGLE_ROUTES_API_KEY`** (or **`GOOGLE_MAPS_API_KEY`**) in the **Convex** dashboard (see `.env.example` comments). Do not put these secrets in Vercel for server-side calls.
 4. Restart `npm run dev` after changing `.env.local`.
 
 ---

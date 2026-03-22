@@ -24,7 +24,7 @@ const defaultSettings: AppSettings = {
   theme: "light",
   model: "gemini-2.5-flash",
   temperature: 0.7,
-  maxTokens: 2048,
+  maxTokens: 8192,
 };
 
 export function useChat(options: UseChatOptions = {}): UseChatReturn {
