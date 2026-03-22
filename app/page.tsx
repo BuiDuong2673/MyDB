@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useLayoutEffect } from "react";
 import { useChat, useSidebar, useToast } from "@/hooks";
 import {
   ChatCanvas,
@@ -12,6 +12,11 @@ import {
 import { ToastContainer } from "@/components/ui/toast";
 import type { ChatConversation, UserProfile, AppSettings } from "@/lib/types";
 import { getConversations, getCurrentUser, getSettings } from "@/lib/api";
+import {
+  applyThemeToDocument,
+  readStoredTheme,
+  THEME_STORAGE_KEY,
+} from "@/lib/theme";
 
 export default function ChatPage() {
   // Sidebar state
@@ -36,6 +41,7 @@ export default function ChatPage() {
     maxTokens: 8192,
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [inputValue, setInputValue] = useState("");
 
   // Chat state
   const { messages, isLoading, sendMessage, clearMessages, stopGeneration } =
@@ -49,6 +55,11 @@ export default function ChatPage() {
       },
     });
 
+  const resetComposerAndChat = useCallback(() => {
+    clearMessages();
+    setInputValue("");
+  }, [clearMessages]);
+
   // Load initial data
   useEffect(() => {
     const loadData = async () => {
@@ -60,7 +71,11 @@ export default function ChatPage() {
         ]);
         setConversations(convData);
         setUser(userData);
-        setSettings(settingsData);
+        const storedTheme = readStoredTheme();
+        setSettings({
+          ...settingsData,
+          theme: storedTheme ?? settingsData.theme,
+        });
       } catch (err) {
         console.error("Failed to load initial data:", err);
       }
@@ -70,8 +85,8 @@ export default function ChatPage() {
 
   const handleNewChat = useCallback(() => {
     setCurrentConversationId(undefined);
-    clearMessages();
-  }, [clearMessages]);
+    resetComposerAndChat();
+  }, [resetComposerAndChat]);
 
   const handleSelectConversation = useCallback((id: string) => {
     setCurrentConversationId(id);
@@ -93,8 +108,35 @@ export default function ChatPage() {
   );
 
   const handleUpdateSettings = useCallback((updates: Partial<AppSettings>) => {
-    setSettings((prev) => ({ ...prev, ...updates }));
+    setSettings((prev) => {
+      const next = { ...prev, ...updates };
+      if (updates.theme !== undefined) {
+        try {
+          localStorage.setItem(THEME_STORAGE_KEY, next.theme);
+        } catch {
+          /* ignore */
+        }
+      }
+      return next;
+    });
   }, []);
+
+  useLayoutEffect(() => {
+    const stored = readStoredTheme();
+    const resolved = stored ?? settings.theme;
+    if (stored && stored !== settings.theme) {
+      setSettings((s) => ({ ...s, theme: stored }));
+    }
+    applyThemeToDocument(resolved);
+  }, [settings.theme]);
+
+  const handleSendMessage = useCallback(
+    (content: string) => {
+      void sendMessage(content);
+      setInputValue("");
+    },
+    [sendMessage]
+  );
 
   const currentConversation = conversations.find(
     (c) => c.id === currentConversationId
@@ -122,17 +164,20 @@ export default function ChatPage() {
         <ChatHeader
           sidebarOpen={sidebarOpen}
           subtitle={currentConversation?.title}
-          onClearChat={clearMessages}
+          onHomeClick={resetComposerAndChat}
+          onClearChat={resetComposerAndChat}
         />
 
         <ChatCanvas
           messages={messages}
           isLoading={isLoading}
-          onSuggestionClick={sendMessage}
+          onSuggestionSelect={setInputValue}
         />
 
         <ChatInput
-          onSend={sendMessage}
+          value={inputValue}
+          onChange={setInputValue}
+          onSend={handleSendMessage}
           onStop={stopGeneration}
           isLoading={isLoading}
         />

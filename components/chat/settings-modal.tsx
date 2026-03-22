@@ -1,9 +1,89 @@
 "use client";
 
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { AppSettings } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
+
+/** Matches Max Tokens and other settings fields (native selects use OS colors for the list). */
+const settingsFieldClass =
+  "w-full px-3 py-2 bg-muted border border-input rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+
+const MODEL_OPTIONS = [
+  { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+  { value: "gemini-2.5-flash-lite", label: "Gemini 2.5 Flash-Lite" },
+  { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
+] as const;
+
+function ModelMenu({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (model: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const label =
+    MODEL_OPTIONS.find((o) => o.value === value)?.label ?? value;
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        id="settings-model-trigger"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+        className={cn(
+          settingsFieldClass,
+          "flex items-center justify-between gap-2 text-left"
+        )}
+      >
+        <span className="truncate">{label}</span>
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
+            open && "rotate-180"
+          )}
+        />
+      </button>
+      {open && (
+        <>
+          <button
+            type="button"
+            className="fixed inset-0 z-40 cursor-default"
+            aria-hidden
+            onClick={() => setOpen(false)}
+          />
+          <ul
+            role="listbox"
+            aria-labelledby="settings-model-trigger"
+            className="absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-auto rounded-lg border border-input bg-muted py-1 shadow-lg"
+          >
+            {MODEL_OPTIONS.map((opt) => (
+              <li key={opt.value} role="option" aria-selected={value === opt.value}>
+                <button
+                  type="button"
+                  className={cn(
+                    "w-full px-3 py-2 text-left text-sm text-foreground hover:bg-secondary hover:text-secondary-foreground",
+                    value === opt.value && "bg-secondary text-secondary-foreground"
+                  )}
+                  onClick={() => {
+                    onChange(opt.value);
+                    setOpen(false);
+                  }}
+                >
+                  {opt.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </div>
+  );
+}
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -40,16 +120,13 @@ export function SettingsModal({
         <div className="space-y-6">
           {/* Model Selection */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Model</label>
-            <select
+            <label className="text-sm font-medium" htmlFor="settings-model-trigger">
+              Model
+            </label>
+            <ModelMenu
               value={settings.model}
-              onChange={(e) => onUpdateSettings({ model: e.target.value })}
-              className="w-full px-3 py-2 bg-muted border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-              <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite</option>
-              <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-            </select>
+              onChange={(model) => onUpdateSettings({ model })}
+            />
           </div>
 
           {/* Temperature */}
@@ -88,7 +165,7 @@ export function SettingsModal({
               onChange={(e) =>
                 onUpdateSettings({ maxTokens: parseInt(e.target.value) })
               }
-              className="w-full px-3 py-2 bg-muted border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className={settingsFieldClass}
             />
             <p className="text-xs text-muted-foreground">
               Maximum length of the generated response.
