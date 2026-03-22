@@ -10,6 +10,7 @@
 
 import type * as agents_orchestrator from "../agents/orchestrator.js";
 import type * as agents_registry from "../agents/registry.js";
+import type * as agents_searchTripAgent from "../agents/searchTripAgent.js";
 import type * as agents_searchTripByArrivalAgent from "../agents/searchTripByArrivalAgent.js";
 import type * as agents_searchTripByDepartureAgent from "../agents/searchTripByDepartureAgent.js";
 import type * as agents_toolDeclarations from "../agents/toolDeclarations.js";
@@ -28,6 +29,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   "agents/orchestrator": typeof agents_orchestrator;
   "agents/registry": typeof agents_registry;
+  "agents/searchTripAgent": typeof agents_searchTripAgent;
   "agents/searchTripByArrivalAgent": typeof agents_searchTripByArrivalAgent;
   "agents/searchTripByDepartureAgent": typeof agents_searchTripByDepartureAgent;
   "agents/toolDeclarations": typeof agents_toolDeclarations;
