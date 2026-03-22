@@ -52,6 +52,29 @@
   --radius: 0.75rem;
 }
 
+/* Dark mode — same token names as :root so bg-background etc. track the toggle */
+.dark {
+  --background: #18181b;
+  --foreground: #fafafa;
+  --card: #27272a;
+  --card-foreground: #fafafa;
+  --popover: #27272a;
+  --popover-foreground: #fafafa;
+  --primary: #ec0016;
+  --primary-foreground: #ffffff;
+  --secondary: #3f3f46;
+  --secondary-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #3f1720;
+  --accent-foreground: #fecaca;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #3f3f46;
+  --input: #3f3f46;
+  --ring: #f87171;
+}
+
 * {
   border-color: var(--border);
 }

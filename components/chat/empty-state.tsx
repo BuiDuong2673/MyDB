@@ -25,38 +25,57 @@ function SuggestionCard({ icon, title, description, onClick }: SuggestionCardPro
 }
 
 interface EmptyStateProps {
-  onSuggestionClick: (message: string) => void;
+  onSuggestionSelect: (template: string) => void;
 }
 
-export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
+export function EmptyState({ onSuggestionSelect }: EmptyStateProps) {
   const suggestions = [
     {
       icon: <Route className="w-5 h-5" />,
-      title: "Plan a trip",
-      description: "Connections, duration, and changes",
-      message:
-        "I need a train from Berlin to Munich tomorrow morning. What are good options with few changes?",
+      title: "Plan a trip (known departure time)",
+      description: "Find trips that start at the departure time",
+      template: `I want to go
+      - From: Berlin Hbf
+      - To: Munich Hbf
+      - Departure Date: 23.03.2026
+      - Departure Time: 10am
+
+      Which 3 trips arrive at the destination first?`,
     },
     {
       icon: <MapPin className="w-5 h-5" />,
-      title: "Stations & stops",
-      description: "Find platforms and local tips",
-      message:
-        "What should I know about arriving at Frankfurt (Main) Hauptbahnhof with luggage?",
+      title: "Plan a trip (known arrival time)",
+      description: "Find trips that arrive before the arrival time",
+      template: `I want to go
+      - From: Berlin Hbf
+      - To: Munich Hbf
+      - Arrival Date: 23.03.2026
+      - Arrival Time: 10am
+
+      List the 3 options that arrive at or before the arrival time mentioned above and have the latest
+      possible departure (i.e. maximize departure time while still meeting the arrival deadline).`,
     },
     {
       icon: <Clock className="w-5 h-5" />,
-      title: "Timing & delays",
+      title: "Comfortable transfer duration",
       description: "Buffers and alternatives",
-      message:
-        "My connection is 8 minutes. Is that realistic if the first train is often a few minutes late?",
+      template: `I want to go
+      - From: Berlin Hbf
+      - To: Munich Hbf
+      - Date: 23.03.2026
+      - Time: 10am
+      Which 3 best trips with transfer durations more than 3 minutes.`
     },
     {
       icon: <TrainFront className="w-5 h-5" />,
-      title: "Tickets & savings",
-      description: "Saver fares and passes",
-      message:
-        "When is a day ticket better than two single tickets for regional travel in Germany?",
+      title: "Least Transfer Trips",
+      description: "Find trips that has the least number of transfers",
+      template: `I want to go
+      - From: Berlin Hbf
+      - To: Munich Hbf
+      - Date: 23.03.2026
+      - Time: 10am
+      Which 3 trips with the least number of transfers?`,
     },
   ];
 
@@ -82,7 +101,7 @@ export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
               icon={suggestion.icon}
               title={suggestion.title}
               description={suggestion.description}
-              onClick={() => onSuggestionClick(suggestion.message)}
+              onClick={() => onSuggestionSelect(suggestion.template)}
             />
           ))}
         </div>
