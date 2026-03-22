@@ -3,60 +3,11 @@
 import { cn } from "@/lib/utils";
 import { formatTimestamp } from "@/lib/utils";
 import type { Message } from "@/lib/types";
-import { User, Sparkles, Copy, Check } from "lucide-react";
-import { useState, type ReactNode } from "react";
-import ReactMarkdown from "react-markdown";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { User, Sparkles } from "lucide-react";
+import { CHAT_MESSAGE_BODY_TYPOGRAPHY } from "@/lib/chat-message-body";
 
 interface MessageBubbleProps {
   message: Message;
-}
-
-function CodeBlockWithCopy({
-  language,
-  children,
-}: {
-  language: string;
-  children: ReactNode;
-}) {
-  const [copied, setCopied] = useState(false);
-  const codeText = String(children).replace(/\n$/, "");
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(codeText);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <div className="relative group/code my-4">
-      <div className="flex items-center justify-between px-4 py-2 bg-muted rounded-t-lg border-b border-border">
-        <span className="text-xs text-muted-foreground font-mono">{language}</span>
-        <button
-          type="button"
-          onClick={handleCopy}
-          className="text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="Copy code"
-        >
-          {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-        </button>
-      </div>
-      <SyntaxHighlighter
-        style={oneDark}
-        language={language}
-        PreTag="div"
-        customStyle={{
-          margin: 0,
-          borderTopLeftRadius: 0,
-          borderTopRightRadius: 0,
-          background: "var(--muted)",
-        }}
-      >
-        {codeText}
-      </SyntaxHighlighter>
-    </div>
-  );
 }
 
 export function MessageBubble({ message }: MessageBubbleProps) {
@@ -92,59 +43,10 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           </span>
         </div>
 
-        <div className="prose max-w-none">
-          <ReactMarkdown
-            components={{
-              code({ className, children, ...props }) {
-                const match = /language-(\w+)/.exec(className || "");
-                const isInline = !match;
-                
-                if (isInline) {
-                  return (
-                    <code
-                      className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono"
-                      {...props}
-                    >
-                      {children}
-                    </code>
-                  );
-                }
-
-                return (
-                  <CodeBlockWithCopy language={match[1]}>{children}</CodeBlockWithCopy>
-                );
-              },
-              p({ children }) {
-                return <p className="mb-4 last:mb-0 leading-relaxed">{children}</p>;
-              },
-              ul({ children }) {
-                return <ul className="list-disc pl-6 mb-4 space-y-1">{children}</ul>;
-              },
-              ol({ children }) {
-                return <ol className="list-decimal pl-6 mb-4 space-y-1">{children}</ol>;
-              },
-              strong({ children }) {
-                return <strong className="font-semibold">{children}</strong>;
-              },
-              a({ href, children }) {
-                return (
-                  <a
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline"
-                  >
-                    {children}
-                  </a>
-                );
-              },
-            }}
-          >
-            {message.content}
-          </ReactMarkdown>
-
+        <div className={CHAT_MESSAGE_BODY_TYPOGRAPHY}>
+          {message.content}
           {message.isStreaming && (
-            <span className="inline-block w-2 h-4 bg-foreground animate-pulse ml-1" />
+            <span className="inline-block w-2 h-4 bg-foreground animate-pulse ml-0.5 align-text-bottom" />
           )}
         </div>
       </div>

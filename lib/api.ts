@@ -1,39 +1,16 @@
 import { Message, ChatConversation, UserProfile, AppSettings } from "./types";
 import { sendChatAction } from "./convex-chat-action";
 import { generateId } from "./utils";
+import { mockConversations } from "./demo-chat-histories";
 
 // ============================================
 // MOCK DATA - Replace with actual database calls
 // ============================================
 
-const mockConversations: ChatConversation[] = [
-  {
-    id: "1",
-    title: "Getting started with React",
-    messages: [],
-    createdAt: new Date(Date.now() - 86400000),
-    updatedAt: new Date(Date.now() - 86400000),
-  },
-  {
-    id: "2",
-    title: "API design patterns",
-    messages: [],
-    createdAt: new Date(Date.now() - 172800000),
-    updatedAt: new Date(Date.now() - 172800000),
-  },
-  {
-    id: "3",
-    title: "Database design patterns",
-    messages: [],
-    createdAt: new Date(Date.now() - 259200000),
-    updatedAt: new Date(Date.now() - 259200000),
-  },
-];
-
 const mockUser: UserProfile = {
   id: "user_1",
-  name: "John Doe",
-  email: "john@example.com",
+  name: "User",
+  email: "an.user@example.com",
 };
 
 const mockSettings: AppSettings = {

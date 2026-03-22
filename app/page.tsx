@@ -44,8 +44,14 @@ export default function ChatPage() {
   const [inputValue, setInputValue] = useState("");
 
   // Chat state
-  const { messages, isLoading, sendMessage, clearMessages, stopGeneration } =
-    useChat({
+  const {
+    messages,
+    isLoading,
+    sendMessage,
+    clearMessages,
+    loadMessages,
+    stopGeneration,
+  } = useChat({
       settings,
       onError: (err) => {
         addToast({
@@ -56,6 +62,7 @@ export default function ChatPage() {
     });
 
   const resetComposerAndChat = useCallback(() => {
+    setCurrentConversationId(undefined);
     clearMessages();
     setInputValue("");
   }, [clearMessages]);
@@ -88,10 +95,16 @@ export default function ChatPage() {
     resetComposerAndChat();
   }, [resetComposerAndChat]);
 
-  const handleSelectConversation = useCallback((id: string) => {
-    setCurrentConversationId(id);
-    // TODO: Load messages for selected conversation
-  }, []);
+  const handleSelectConversation = useCallback(
+    (id: string) => {
+      setCurrentConversationId(id);
+      const conv = conversations.find((c) => c.id === id);
+      if (conv) {
+        loadMessages(conv.messages);
+      }
+    },
+    [conversations, loadMessages]
+  );
 
   const handleDeleteConversation = useCallback(
     (id: string) => {
@@ -138,6 +151,17 @@ export default function ChatPage() {
     [sendMessage]
   );
 
+  const handleSignOut = useCallback(() => {
+    setUser(undefined);
+    setConversations([]);
+    setCurrentConversationId(undefined);
+    resetComposerAndChat();
+    addToast({
+      type: "success",
+      message: "Signed out",
+    });
+  }, [addToast, resetComposerAndChat]);
+
   const currentConversation = conversations.find(
     (c) => c.id === currentConversationId
   );
@@ -157,6 +181,7 @@ export default function ChatPage() {
         onDeleteConversation={handleDeleteConversation}
         onOpenSettings={() => setSettingsOpen(true)}
         user={user}
+        onSignOut={handleSignOut}
       />
 
       {/* Main Chat Area */}
