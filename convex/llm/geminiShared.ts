@@ -24,7 +24,7 @@ export function sanitizeTemperature(temperature?: number): number {
 
 export function sanitizeMaxTokens(maxTokens?: number): number {
   if (typeof maxTokens !== "number" || Number.isNaN(maxTokens)) {
-    return 2048;
+    return 8192;
   }
   return Math.max(1, Math.min(8192, Math.floor(maxTokens)));
 }

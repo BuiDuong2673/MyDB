@@ -7,18 +7,35 @@ export const agentFunctionDeclarations = [
   {
     name: RETRIEVE_SPECIALIZED_INFORMATION,
     description:
-      "Retrieve factual, specialized information from the internal knowledge subsystem (routes, stations, schedules, policies). " +
-      "Call this when the user needs concrete data you should not invent. " +
-      "If the user's request is ambiguous or missing critical details (origin, destination, date, etc.), do NOT call this tool—reply in plain text with a short clarifying question instead.",
+      "Search for public transit options (Google Maps transit data: trains, buses, metro, etc.) between two places on a specific travel day and departure clock time. " +
+      "Date and time are interpreted in Europe/Berlin. Only call when origin, destination, dd.mm.yyyy date, and HH:mm departure time are known; otherwise ask the user. " +
+      "Correct typo in user input before entering into this tool parameters. " +
+      "The tool result `text` field is a JSON document (schemaVersion 1) describing routes, segments, and times; parse it and present a clear answer to the user.",
     parameters: {
       type: "object" as const,
       properties: {
-        query: {
+        origin: {
           type: "string" as const,
           description:
-            "What to look up: paraphrase the user's information need in a short phrase.",
+            "Departure place: address or station name Google Maps can geocode (e.g. 'Berlin Hauptbahnhof').",
+        },
+        destination: {
+          type: "string" as const,
+          description:
+            "Arrival place: address or station name Google Maps can geocode.",
+        },
+        date: {
+          type: "string" as const,
+          description:
+            "Travel date MUST be dd.mm.yyyy (European order). Examples: 09.06.2025, 15.12.2024. Never use yyyy-mm-dd.",
+        },
+        departureTime: {
+          type: "string" as const,
+          description:
+            "Departure time on that day, MUST be HH:mm in 24-hour local time. Examples: 09:00, 14:35.",
         },
       },
+      required: ["origin", "destination", "date", "departureTime"] as const,
     },
   },
 ];
