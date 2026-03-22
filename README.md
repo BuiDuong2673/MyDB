@@ -2,7 +2,7 @@
 
 **The AI travel advisor that finds the perfect train for your journey.**
 
-A [Next.js](https://nextjs.org/) chat app with a Deutsche Bahn–inspired UI. Chat uses **[Convex](https://convex.dev/)**: `lib/api.ts` calls a Convex **action** (`convex/chat.ts`) that runs **`runChatOrchestrator`**, which calls **Gemini first** with **function calling** (`convex/llm/geminiToolChat.ts`). The model may answer in plain text (including asking the user for missing details) or invoke **`retrieve_specialized_information`**, which runs **`searchTripAgent`**: it calls the **Google Routes API** (`TRANSIT`) with `origin` and `destination` addresses, **`date` as `dd.mm.yyyy`**, and **`departureTime` as `HH:mm`** interpreted in **Europe/Berlin**, and returns up to a few alternative routes (Google’s limit). Tool results are sent back to Gemini until a final answer is produced. A simpler single-turn helper remains in `convex/llm/gemini.ts` (`generateWithGemini`). **`NEXT_PUBLIC_CONVEX_URL`** in `.env.local` / Vercel points the client at your deployment. **`GEMINI_API_KEY`** and **`GOOGLE_ROUTES_API_KEY`** (or **`GOOGLE_MAPS_API_KEY`**) belong in the **Convex** dashboard (not the browser). Conversations and settings are still mocked in the UI with hooks ready for a real database.
+A [Next.js](https://nextjs.org/) chat app with a Deutsche Bahn–inspired UI. Chat uses **[Convex](https://convex.dev/)**: `lib/api.ts` calls a Convex **action** (`convex/chat.ts`) that runs **`runChatOrchestrator`**, which calls **Gemini first** with **function calling** (`convex/llm/geminiToolChat.ts`). The model may answer in plain text (including asking the user for missing details) or invoke **`retrieve_trip_by_departure`** (departure time) or **`retrieve_trip_by_arrival`** (arrival time), which run **`searchTripByDepartureAgent`** / **`searchTripByArrivalAgent`**: they call the **Google Routes API** (`TRANSIT`) with `origin` and `destination` addresses, **`date` as `dd.mm.yyyy`**, and **`departureTime` or `arrivalTime` as `HH:mm`** interpreted in **Europe/Berlin**, and return up to a few alternative routes (Google’s limit). Tool results are sent back to Gemini until a final answer is produced. A simpler single-turn helper remains in `convex/llm/gemini.ts` (`generateWithGemini`). **`NEXT_PUBLIC_CONVEX_URL`** in `.env.local` / Vercel points the client at your deployment. **`GEMINI_API_KEY`** and **`GOOGLE_ROUTES_API_KEY`** (or **`GOOGLE_MAPS_API_KEY`**) belong in the **Convex** dashboard (not the browser). Conversations and settings are still mocked in the UI with hooks ready for a real database.
 
 ---
 
@@ -40,9 +40,10 @@ A [Next.js](https://nextjs.org/) chat app with a Deutsche Bahn–inspired UI. Ch
 | `convex/schema.ts` | Convex schema (empty until you add tables). |
 | `convex/chat.ts` | Action `sendChat`: validates messages, then `runChatOrchestrator` (same payload shape as `lib/api.ts`). |
 | `convex/agents/types.ts` | Shared types: `Agent`, `AgentInput`, `AgentResult`, chat message and settings shapes. |
-| `convex/agents/toolDeclarations.ts` | Gemini `functionDeclarations` for agent tools (e.g. `retrieve_specialized_information`). |
-| `convex/agents/registry.ts` | Maps tool names to agents; `executeAgentTool` dispatches to `searchTripAgent` for trip search. |
-| `convex/agents/searchTripAgent.ts` | Trip search agent: validates `dd.mm.yyyy` / `HH:mm`, calls Google Routes API (`TRANSIT`), formats route options as text. |
+| `convex/agents/toolDeclarations.ts` | Gemini `functionDeclarations` for trip tools (`retrieve_trip_by_departure`, `retrieve_trip_by_arrival`). |
+| `convex/agents/registry.ts` | Maps tool names to agents; `executeAgentTool` dispatches to `searchTripByDepartureAgent` / `searchTripByArrivalAgent`. |
+| `convex/agents/searchTripByDepartureAgent.ts` | Departure-based trip search: `departureTime`, Google Routes `departureTime`. |
+| `convex/agents/searchTripByArrivalAgent.ts` | Arrival-based trip search: `arrivalTime`, Google Routes `arrivalTime`. |
 | `convex/agents/orchestrator.ts` | `runChatOrchestrator` → `runGeminiToolChat` (Gemini-first, AUTO tools, multi-turn). |
 | `convex/llm/geminiShared.ts` | Shared Gemini URL, API key check, and generation settings sanitizers. |
 | `convex/llm/geminiToolChat.ts` | `runGeminiToolChat`: multi-turn `generateContent` with tools and `functionResponse` loop. |
