@@ -1,4 +1,10 @@
 import { TrainFront, MapPin, Clock, Route } from "lucide-react";
+import {
+  PROMPT_COMFORTABLE_TRANSFER,
+  PROMPT_KNOWN_ARRIVAL,
+  PROMPT_KNOWN_DEPARTURE,
+  PROMPT_LEAST_TRANSFERS,
+} from "@/lib/trip-prompt-templates";
 
 interface SuggestionCardProps {
   icon: React.ReactNode;
@@ -34,48 +40,25 @@ export function EmptyState({ onSuggestionSelect }: EmptyStateProps) {
       icon: <Route className="w-5 h-5" />,
       title: "Plan a trip (known departure time)",
       description: "Find trips that start at the departure time",
-      template: `I want to go
-      - From: Berlin Hbf
-      - To: Munich Hbf
-      - Departure Date: 23.03.2026
-      - Departure Time: 10am
-
-      Which 3 trips arrive at the destination first?`,
+      template: PROMPT_KNOWN_DEPARTURE,
     },
     {
       icon: <MapPin className="w-5 h-5" />,
       title: "Plan a trip (known arrival time)",
       description: "Find trips that arrive before the arrival time",
-      template: `I want to go
-      - From: Berlin Hbf
-      - To: Munich Hbf
-      - Arrival Date: 23.03.2026
-      - Arrival Time: 10am
-
-      List the 3 options that arrive at or before the arrival time mentioned above and have the latest
-      possible departure (i.e. maximize departure time while still meeting the arrival deadline).`,
+      template: PROMPT_KNOWN_ARRIVAL,
     },
     {
       icon: <Clock className="w-5 h-5" />,
       title: "Comfortable transfer duration",
       description: "Find trips that have at least some minutes for transfer between trains/buses",
-      template: `I want to go
-      - From: Berlin Hbf
-      - To: Munich Hbf
-      - Date: 23.03.2026
-      - Time: 10am
-      Which 3 best trips with transfer durations more than 3 minutes.`
+      template: PROMPT_COMFORTABLE_TRANSFER
     },
     {
       icon: <TrainFront className="w-5 h-5" />,
       title: "Least Transfer Trips",
       description: "Find trips that has the least number of transfers",
-      template: `I want to go
-      - From: Berlin Hbf
-      - To: Munich Hbf
-      - Date: 23.03.2026
-      - Time: 10am
-      Which 3 trips with the least number of transfers?`,
+      template: PROMPT_LEAST_TRANSFERS,
     },
   ];
 

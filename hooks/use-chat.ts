@@ -17,6 +17,7 @@ interface UseChatReturn {
   error: Error | null;
   sendMessage: (content: string) => Promise<void>;
   clearMessages: () => void;
+  loadMessages: (messages: Message[]) => void;
   stopGeneration: () => void;
 }
 
@@ -112,6 +113,18 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
     setError(null);
   }, []);
 
+  const loadMessages = useCallback((next: Message[]) => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    setIsLoading(false);
+    setMessages(
+      next.map((m) =>
+        m.isStreaming ? { ...m, isStreaming: false } : m
+      )
+    );
+    setError(null);
+  }, []);
+
   const stopGeneration = useCallback(() => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -132,6 +145,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
     error,
     sendMessage,
     clearMessages,
+    loadMessages,
     stopGeneration,
   };
 }

@@ -11,6 +11,7 @@ import {
 } from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
+import { CHAT_MESSAGE_BODY_TYPOGRAPHY } from "@/lib/chat-message-body";
 
 interface ChatInputProps {
   value: string;
@@ -84,8 +85,9 @@ export function ChatInput({
             disabled={disabled}
             rows={1}
             className={cn(
-              "flex-1 resize-none bg-transparent text-foreground placeholder:text-muted-foreground",
-              "focus:outline-none py-2 px-1 max-h-[200px] text-sm leading-relaxed"
+              "flex-1 resize-none bg-transparent placeholder:text-muted-foreground",
+              "focus:outline-none py-2 px-1 max-h-[200px]",
+              CHAT_MESSAGE_BODY_TYPOGRAPHY
             )}
           />
 
