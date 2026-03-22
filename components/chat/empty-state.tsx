@@ -73,7 +73,7 @@ export function EmptyState({ onSuggestionSelect }: EmptyStateProps) {
             Where would you like to go?
           </h1>
           <p className="text-muted-foreground text-balance max-w-md mx-auto">
-            MyDB helps you plan rail journeys—routes, timing, and travel tips tailored to your trip.
+            A powerful and thoughtful AI Travel Advisor for flexible trip planning in Germany.
           </p>
         </div>
 
