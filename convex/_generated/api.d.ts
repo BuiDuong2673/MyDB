@@ -8,7 +8,15 @@
  * @module
  */
 
+import type * as agents_orchestrator from "../agents/orchestrator.js";
+import type * as agents_registry from "../agents/registry.js";
+import type * as agents_searchTripAgent from "../agents/searchTripAgent.js";
+import type * as agents_toolDeclarations from "../agents/toolDeclarations.js";
+import type * as agents_types from "../agents/types.js";
 import type * as chat from "../chat.js";
+import type * as llm_gemini from "../llm/gemini.js";
+import type * as llm_geminiShared from "../llm/geminiShared.js";
+import type * as llm_geminiToolChat from "../llm/geminiToolChat.js";
 
 import type {
   ApiFromModules,
@@ -17,7 +25,15 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "agents/orchestrator": typeof agents_orchestrator;
+  "agents/registry": typeof agents_registry;
+  "agents/searchTripAgent": typeof agents_searchTripAgent;
+  "agents/toolDeclarations": typeof agents_toolDeclarations;
+  "agents/types": typeof agents_types;
   chat: typeof chat;
+  "llm/gemini": typeof llm_gemini;
+  "llm/geminiShared": typeof llm_geminiShared;
+  "llm/geminiToolChat": typeof llm_geminiToolChat;
 }>;
 
 /**
