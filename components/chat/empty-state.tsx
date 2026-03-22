@@ -58,7 +58,7 @@ export function EmptyState({ onSuggestionSelect }: EmptyStateProps) {
     {
       icon: <Clock className="w-5 h-5" />,
       title: "Comfortable transfer duration",
-      description: "Buffers and alternatives",
+      description: "Find trips that have at least some minutes for transfer between trains/buses",
       template: `I want to go
       - From: Berlin Hbf
       - To: Munich Hbf

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import type { ChatConversation, UserProfile } from "@/lib/types";
 import { Avatar } from "@/components/ui/avatar";
@@ -14,6 +15,7 @@ import {
   Settings,
   Trash2,
   Search,
+  LogOut,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -28,6 +30,7 @@ interface SidebarProps {
   onDeleteConversation: (id: string) => void;
   onOpenSettings: () => void;
   user?: UserProfile;
+  onSignOut?: () => void;
 }
 
 export function Sidebar({
@@ -42,7 +45,14 @@ export function Sidebar({
   onDeleteConversation,
   onOpenSettings,
   user,
+  onSignOut,
 }: SidebarProps) {
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!user) setUserMenuOpen(false);
+  }, [user]);
+
   if (!isOpen) {
     return (
       <div className="fixed top-4 left-4 z-50 md:relative md:top-0 md:left-0">
@@ -182,11 +192,42 @@ export function Sidebar({
               </button>
             </Tooltip>
             {user && (
-              <Tooltip content={user.name} side="right">
-                <button className="w-full p-2 rounded-lg hover:bg-muted transition-colors flex items-center justify-center">
-                  <Avatar fallback={user.name} size="sm" />
-                </button>
-              </Tooltip>
+              <div className="relative flex justify-center">
+                <Tooltip content={user.name} side="right">
+                  <button
+                    type="button"
+                    onClick={() => setUserMenuOpen((o) => !o)}
+                    className="w-full p-2 rounded-lg hover:bg-muted transition-colors flex items-center justify-center"
+                    aria-expanded={userMenuOpen}
+                    aria-haspopup="menu"
+                  >
+                    <Avatar fallback={user.name} size="sm" />
+                  </button>
+                </Tooltip>
+                {userMenuOpen && (
+                  <>
+                    <button
+                      type="button"
+                      className="fixed inset-0 z-[45]"
+                      aria-hidden
+                      onClick={() => setUserMenuOpen(false)}
+                    />
+                    <div className="absolute left-1/2 bottom-full z-50 mb-1 w-44 -translate-x-1/2 rounded-lg border border-border bg-popover py-1 shadow-lg">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onSignOut?.();
+                          setUserMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                      >
+                        <LogOut className="h-4 w-4 shrink-0" />
+                        Sign out
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             )}
           </>
         ) : (
@@ -199,15 +240,46 @@ export function Sidebar({
               <span className="text-sm">Settings</span>
             </button>
             {user && (
-              <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors">
-                <Avatar fallback={user.name} size="sm" />
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-medium truncate">{user.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {user.email}
-                  </p>
-                </div>
-              </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen((o) => !o)}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                  aria-expanded={userMenuOpen}
+                  aria-haspopup="menu"
+                >
+                  <Avatar fallback={user.name} size="sm" />
+                  <div className="flex-1 text-left min-w-0">
+                    <p className="text-sm font-medium truncate">{user.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {user.email}
+                    </p>
+                  </div>
+                </button>
+                {userMenuOpen && (
+                  <>
+                    <button
+                      type="button"
+                      className="fixed inset-0 z-[45]"
+                      aria-hidden
+                      onClick={() => setUserMenuOpen(false)}
+                    />
+                    <div className="absolute left-2 right-2 bottom-full z-50 mb-1 rounded-lg border border-border bg-popover py-1 shadow-lg">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onSignOut?.();
+                          setUserMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                      >
+                        <LogOut className="h-4 w-4 shrink-0" />
+                        Sign out
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             )}
           </>
         )}

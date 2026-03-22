@@ -138,6 +138,17 @@ export default function ChatPage() {
     [sendMessage]
   );
 
+  const handleSignOut = useCallback(() => {
+    setUser(undefined);
+    setConversations([]);
+    setCurrentConversationId(undefined);
+    resetComposerAndChat();
+    addToast({
+      type: "success",
+      message: "Signed out",
+    });
+  }, [addToast, resetComposerAndChat]);
+
   const currentConversation = conversations.find(
     (c) => c.id === currentConversationId
   );
@@ -157,6 +168,7 @@ export default function ChatPage() {
         onDeleteConversation={handleDeleteConversation}
         onOpenSettings={() => setSettingsOpen(true)}
         user={user}
+        onSignOut={handleSignOut}
       />
 
       {/* Main Chat Area */}
